@@ -28,6 +28,13 @@ g++ -std=c++17 -O2 -o move_to_home move_to_home.cpp -lpthread
 g++ -std=c++17 -O2 -o step_mode step_mode.cpp -lpthread
 ```
 
+Alternatively, you can use the Makefile for convenience:
+
+```bash
+make        # builds all example binaries
+make clean  # removes all built binaries
+```
+
 ## Run
 Run the executables (adjust device path and servo ID in the source if needed):
 
