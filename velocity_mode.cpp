@@ -1,4 +1,5 @@
-// Linux version of the simple motion example (header-only driver)
+// Operate the STS3215 servo in velocity mode (Linux)
+// Continuously spins at two velocities with delays.
 
 #include <iostream>
 #include <unistd.h>
@@ -31,7 +32,7 @@ int main(int argc, char **argv)
         }
         else if (arg == "--help")
         {
-            std::cout << "Usage: simple_motion [--port /dev/ttyUSB0] [--id 1]\n";
+            std::cout << "Usage: velocity_mode [--port /dev/ttyUSB0] [--id 1]\n";
             return 0;
         }
     }
@@ -45,7 +46,7 @@ int main(int argc, char **argv)
     serial.setTimeout(2);
 
     STSServoDriver servos;
-    const uint8_t SERVO_ID = static_cast<uint8_t>(servo_id); // change to your servo's ID
+    const uint8_t SERVO_ID = static_cast<uint8_t>(servo_id);
 
     if (!servos.init(&serial))
     {
@@ -53,32 +54,16 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    servos.setMode(0xFE, STSMode::POSITION);
+    // Set the servo to velocity mode.
+    servos.setMode(SERVO_ID, STSMode::VELOCITY);
 
-    // Simple motion: 0 -> 2048 -> 4095
-    auto wait_until_done = [&](uint8_t id)
+    // Continuous spin: +500 steps/s for 4s, then -2048 steps/s for 2s
+    while (true)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        while (servos.isMoving(id))
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(300));
-    };
-
-    if (!servos.ping(SERVO_ID))
-    {
-        std::cerr << "Servo " << int(SERVO_ID) << " not responding" << std::endl;
+        servos.setTargetVelocity(SERVO_ID, 500);
+        std::this_thread::sleep_for(std::chrono::milliseconds(4000));
+        servos.setTargetVelocity(SERVO_ID, -2048);
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     }
-
-    servos.setTargetPosition(SERVO_ID, 0);
-    wait_until_done(SERVO_ID);
-
-    servos.setTargetPosition(SERVO_ID, 2048);
-    wait_until_done(SERVO_ID);
-
-    servos.setTargetPosition(SERVO_ID, 4095, 500);
-    wait_until_done(SERVO_ID);
-
     return 0;
 }
