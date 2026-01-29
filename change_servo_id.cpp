@@ -1,4 +1,10 @@
 // Change the ID of a Feetech STS servo (Linux)
+// Purpose: Reassign a servo's ID and verify the change
+// Flow:
+//  - Parse CLI for port, old ID, and new ID
+//  - Open serial and initialize driver
+//  - Use driver.setId() to safely change ID (handles write lock)
+//  - Ping new ID to confirm success and report
 
 #include <iostream>
 #include <unistd.h>
@@ -32,6 +38,7 @@ int main(int argc, char** argv) {
     }
   }
 
+  // Open and configure the Linux serial device
   LinuxSerial serial(port.c_str());
   if (!serial.begin(1000000)) {
     std::cerr << "Failed to open serial port at 1Mbps: " << port << std::endl;
@@ -45,7 +52,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  // Attempt to change the ID
+  // Attempt to change the ID (returns false if old not found or new already taken)
   bool ok = servos.setId(static_cast<byte>(oldId), static_cast<byte>(newId));
   if (!ok) {
     std::cerr << "Failed to change servo ID " << oldId << " -> " << newId

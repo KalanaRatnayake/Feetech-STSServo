@@ -1,6 +1,8 @@
 # Feetech STS Servo — Linux Sweep Example
 
-This repo demonstrates controlling a Feetech STS servo (e.g., STS3215) via the FE-URT-1 interface board from Linux using /dev/ttyUSB0. This is inspired by and replicated the examples in [matthieuvigne/STS_servos](https://github.com/matthieuvigne/STS_servos)
+This repo demonstrates controlling a Feetech STS servo (e.g., STS3215) via the FE-URT-1 interface board from Linux using /dev/ttyUSB0. This is inspired by and replicated the examples in [matthieuvigne/STS_servos](https://github.com/matthieuvigne/STS_servos).
+
+> All of the examples were tested using a [FE-URT1](https://www.makerstore.com.au/product/mb-elc-servo-controller-urt1/) as serial interface.
 
 ## What’s Included
 - Header-only driver: STSServoDriver.hpp — Linux-friendly version of the original Arduino driver.

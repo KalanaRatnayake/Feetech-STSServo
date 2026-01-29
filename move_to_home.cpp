@@ -1,4 +1,11 @@
 // Linux version of the simple motion example (header-only driver)
+// Purpose: Home a single servo (move to raw position 0) and exit
+// Flow:
+//  - Parse CLI for serial port and target servo ID
+//  - Open Linux serial at 1 Mbps and initialize driver
+//  - Set all servos to POSITION mode (broadcast)
+//  - Ping target servo (optional) and send target position 0
+//  - Poll movement status until motion completes
 
 #include <iostream>
 #include <unistd.h>
@@ -55,7 +62,7 @@ int main(int argc, char **argv)
 
     servos.setMode(0xFE, STSMode::POSITION);
 
-    // Local wait helper
+    // Helper: wait until the target servo finishes moving
     auto wait_until_done = [&](uint8_t id)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -66,11 +73,12 @@ int main(int argc, char **argv)
         std::this_thread::sleep_for(std::chrono::milliseconds(300));
     };
 
-    // Ping and home the single target
+    // Optional: ping and then home the single target
     if (!servos.ping(SERVO_ID))
     {
         std::cerr << "Servo " << int(SERVO_ID) << " not responding" << std::endl;
     }
+    // Command home (raw position 0)
     servos.setTargetPosition(SERVO_ID, 0);
     wait_until_done(SERVO_ID);
 

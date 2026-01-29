@@ -1,24 +1,9 @@
-// Sweep example to drive a STS3215 servo with an interface board such as
-// FE-URT-1.
-//
-// This code will simply make the servo move in circle from (0, 180, 360)deg.
-// Requirements:
-// - ESP32 board including M5StackCore2 & M5Atom
-// - Serial Interface board. FE-URT-1 is recommended.
-// - STS servo. STS3215 is recommended
-//
-// Connections:
-// | M5Atom  |  --   |  FE-URT-1  |
-// | :-----: | :---: | :--------: |
-// |   5V    |  --   |     5V     |
-// |   GND   |  --   |    GND     |
-// | 32 (RX) |  --   | RXD (Silk) |
-// | 26 (TX) |  --   | TXD (Silk) |
-//
-// Caution !!!
-// This sketch cannot work with Arduino UNO R3 because it has only single serial
-// port. This sketch needs two ports; one is for serial with PC, the another is
-// for servo control The UNO board is not suitable for debugging servo control.
+// Purpose: Continuous demonstration of repeated position moves.
+// Flow:
+//  - Parse CLI for port and servo ID
+//  - Open serial and initialize driver
+//  - Set POSITION mode (broadcast) and loop through 0/2048/4095
+//  - Ping each cycle (optional), command position, and poll movement
 
 #include <iostream>
 #include <unistd.h>
@@ -81,11 +66,13 @@ int main(int argc, char **argv)
 
   while (true)
   {
+    // Optional: ping each cycle to check communication
     if (!servos.ping(SERVO_ID))
     {
       std::cerr << "servo-" << int(SERVO_ID) << " response nothing" << std::endl;
     }
 
+    // Move to near 0°
     servos.setTargetPosition(SERVO_ID, 0);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     while (servos.isMoving(SERVO_ID))
@@ -94,6 +81,7 @@ int main(int argc, char **argv)
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
+    // Move to near 180°
     servos.setTargetPosition(SERVO_ID, 2048);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     while (servos.isMoving(SERVO_ID))
@@ -102,6 +90,7 @@ int main(int argc, char **argv)
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
+    // Move to near 360° with a slower speed
     servos.setTargetPosition(SERVO_ID, 4095, 500);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     while (servos.isMoving(SERVO_ID))

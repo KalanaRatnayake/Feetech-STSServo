@@ -1,5 +1,11 @@
 // Make one servo follow another (Linux)
 // Leader torque is disabled so it can be moved by hand.
+// Purpose: Mirror the leader's position on the follower servo
+// Flow:
+//  - Parse CLI for serial port and leader/follower IDs
+//  - Open serial and initialize driver
+//  - Disable torque on the leader, set follower to POSITION mode
+//  - Loop: read leader position and write follower target position
 
 #include <iostream>
 #include <unistd.h>
@@ -33,6 +39,7 @@ int main(int argc, char** argv) {
     }
   }
 
+  // Open and configure the Linux serial device
   LinuxSerial serial(port.c_str());
   if (!serial.begin(1000000)) {
     std::cerr << "Failed to open serial port at 1Mbps: " << port << std::endl;
@@ -49,11 +56,12 @@ int main(int argc, char** argv) {
   const byte LEADER = static_cast<byte>(leader);
   const byte FOLLOWER = static_cast<byte>(follower);
 
-  // Disable torque on leader and set follower to position mode
+  // Disable torque on leader (so it can be moved by hand)
+  // and set follower to POSITION mode for tracking
   servos.writeRegister(LEADER, STSRegisters::TORQUE_SWITCH, 0);
   servos.setMode(FOLLOWER, STSMode::POSITION);
 
-  // Follow loop
+  // Follow loop: read the leader and command the follower
   while (true) {
     int pos = servos.getCurrentPosition(LEADER);
     servos.setTargetPosition(FOLLOWER, pos);

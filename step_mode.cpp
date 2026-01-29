@@ -1,6 +1,11 @@
-// Operate the STS3215 servo in velocity mode (Linux)
 // Step mode for two servos (Linux)
 // Sends synchronous step commands to both motors.
+// Purpose: Demonstrate STEP mode by issuing forward/backward steps to two servos
+// Flow:
+//  - Parse CLI for port and two servo IDs
+//  - Open serial and initialize driver
+//  - Set both servos to STEP mode
+//  - Loop: sync write +500 steps, wait, then -500 steps, wait
 
 #include <iostream>
 #include <unistd.h>
@@ -65,11 +70,12 @@ int main(int argc, char **argv)
     servos.setMode(ID1, STSMode::STEP);
     servos.setMode(ID2, STSMode::STEP);
 
-    // Convenience: synchronous write to both IDs
+    // Convenience: synchronous write arrays for both IDs
     byte ids[2] = {ID1, ID2};
     int steps[2];
     int speeds[2];
 
+    // Helper: wait until a given servo finishes moving
     auto wait_until_done = [&](uint8_t id)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
